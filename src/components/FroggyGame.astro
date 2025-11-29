@@ -1,0 +1,121 @@
+---
+// Main Game Component - Clean Orchestrator
+import StartScreen from "./ui/StartScreen.astro";
+import GameOverScreen from "./ui/GameOverScreen.astro";
+import ScoreDisplay from "./ui/ScoreDisplay.astro";
+import "../styles/game.css";
+---
+
+<div class="game-container" id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- UI Overlay -->
+  <div class="ui-overlay">
+    <StartScreen />
+    <ScoreDisplay />
+    <GameOverScreen />
+  </div>
+</div>
+
+<script>
+  import { Game } from "../game/core/Game";
+
+  let game: Game | null = null;
+
+  function initGame() {
+    const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    try {
+      game = new Game(canvas);
+
+      // Set up event handlers
+      setupEventHandlers();
+
+      // Initialize game (preloads images)
+      game.initialize(() => {
+        console.log("Game initialized");
+      });
+    } catch (error) {
+      console.error("Error initializing game:", error);
+    }
+  }
+
+  function setupEventHandlers() {
+    if (!game) return;
+
+    // Start button
+    const startButton = document.getElementById("start-button");
+    if (startButton) {
+      startButton.addEventListener("click", () => {
+        game?.start();
+        const startScreen = document.getElementById("start-screen");
+        if (startScreen) startScreen.style.display = "none";
+      });
+    }
+
+    // Retry button
+    const retryButton = document.getElementById("retry-button");
+    if (retryButton) {
+      retryButton.addEventListener("click", () => {
+        game?.restart();
+        const gameOverScreen = document.getElementById("game-over-screen");
+        if (gameOverScreen) gameOverScreen.style.display = "none";
+      });
+    }
+
+    // Canvas click/touch for jumping - Mobile-first
+    const canvas = document.getElementById("game-canvas");
+    if (canvas) {
+      // Use pointer events (works for both mouse and touch)
+      canvas.addEventListener("pointerdown", (e: PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        game?.jump();
+      });
+
+      // Also handle touch events for better mobile support
+      canvas.addEventListener(
+        "touchstart",
+        (e: TouchEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          game?.jump();
+        },
+        { passive: false }
+      );
+
+      // Prevent context menu on long press (mobile)
+      canvas.addEventListener("contextmenu", (e: Event) => {
+        e.preventDefault();
+      });
+    }
+
+    // Score updates
+    game.setOnScoreChange((score) => {
+      const scoreEl = document.getElementById("score-value");
+      if (scoreEl) {
+        scoreEl.textContent = score.toString();
+      }
+    });
+
+    // Game over handler
+    game.setOnGameOver(() => {
+      const finalScoreEl = document.getElementById("final-score");
+      const gameOverScreen = document.getElementById("game-over-screen");
+
+      if (finalScoreEl && game) {
+        finalScoreEl.textContent = game.getScore().toString();
+      }
+
+      if (gameOverScreen) {
+        gameOverScreen.style.display = "flex";
+      }
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (typeof window !== "undefined") {
+    window.addEventListener("DOMContentLoaded", initGame);
+  }
+</script>

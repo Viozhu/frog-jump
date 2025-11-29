@@ -73,11 +73,18 @@ import FroggyGame from "../components/FroggyGame.astro";
   /* Mobile-specific adjustments */
   @media (max-width: 768px) {
     main {
-      padding: 0;
-      align-items: center;
-      justify-content: center;
+      padding: 0 !important;
+      margin: 0 !important;
+      align-items: stretch;
+      justify-content: stretch;
       height: 100vh;
       height: 100dvh;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
   }
 

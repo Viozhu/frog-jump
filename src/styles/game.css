@@ -10,24 +10,29 @@
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   /* Mobile-first: full screen on mobile */
-  display: flex;
-  flex-direction: column;
+  display: block;
   /* Ensure it fills parent */
   flex: 1;
   min-height: 0;
-  /* On mobile, let height be determined by canvas */
-  height: auto;
-  max-height: 100vh;
-  max-height: 100dvh;
 }
 
-/* Mobile: container fills full screen */
+/* Mobile: container fills full screen with 100vh */
 @media (max-width: 768px) {
   .game-container {
+    width: 100%;
     height: 100vh;
-    height: 100dvh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    max-width: 100%;
     max-height: 100vh;
     max-height: 100dvh;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Hide overflow so wider canvas doesn't show outside container */
+    overflow: hidden;
   }
 }
 
@@ -44,14 +49,16 @@
   /* Canvas size will be set by JavaScript based on container */
 }
 
-/* Mobile: canvas fills container */
+/* Mobile: canvas fills full height (100vh), width may overflow */
 @media (max-width: 768px) {
   #game-canvas {
-    width: 100%;
-    height: 100%;
-    flex: 1;
-    min-height: 0;
-    object-fit: contain;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: block;
+    margin: 0;
+    padding: 0;
+    /* Width will be set by JavaScript to scale with height */
+    /* Overflow will be hidden by container */
   }
 }
 
@@ -121,6 +128,7 @@
   background: #3d8b40;
 }
 
+
 .score-display {
   position: absolute;
   top: clamp(0.5rem, 2vw, 1rem);
@@ -135,6 +143,84 @@
   z-index: 5;
   /* Ensure readable on mobile */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Language Selector - Top Right */
+.language-selector {
+  position: absolute;
+  top: clamp(0.5rem, 2vw, 1rem);
+  right: clamp(0.5rem, 2vw, 1rem);
+  z-index: 15;
+  pointer-events: all;
+}
+
+.language-button {
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 8px;
+  padding: clamp(0.5rem, 2vw, 0.75rem);
+  cursor: pointer;
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
+  line-height: 1;
+  transition: background 0.3s, transform 0.1s;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.language-button:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.language-button:active {
+  transform: scale(0.95);
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 150px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.language-option {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: clamp(0.75rem, 3vw, 1rem);
+  color: white;
+  font-size: clamp(0.875rem, 3.5vw, 1rem);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background 0.2s;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.language-option:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.language-option:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.language-option span {
+  font-size: 1.25rem;
 }
 
 /* Tablet and Desktop */

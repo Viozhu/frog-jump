@@ -150,24 +150,26 @@ export class Game {
     const isMobile = containerWidth < 769;
 
     if (isMobile) {
-      // On mobile: scale to fit height first (since phones are tall)
-      // This prevents the game from looking too wide/stretched
+      // On mobile: scale to fill 100vh height, width may overflow (we'll hide it)
+      // This makes the game bigger and more playable
       const scaleY = containerHeight / CANVAS_HEIGHT;
       const scaleX = containerWidth / CANVAS_WIDTH;
       
-      // Use the smaller scale to fit entirely, but prefer height scaling on mobile
-      // This makes the game fill the screen better without looking weird
-      const scale = Math.min(scaleX, scaleY);
+      // Use height scale to fill full height, width will be wider
+      const scale = scaleY;
+      const scaledWidth = CANVAS_WIDTH * scale;
       
-      const displayWidth = CANVAS_WIDTH * scale;
-      const displayHeight = CANVAS_HEIGHT * scale;
-      
-      // Center the canvas if it doesn't fill the width
-      this.canvas.style.width = `${displayWidth}px`;
-      this.canvas.style.height = `${displayHeight}px`;
-      this.canvas.style.maxWidth = "100%";
+      // Fill full height, width will overflow but we hide it with overflow: hidden
+      this.canvas.style.width = `${scaledWidth}px`;
+      this.canvas.style.height = "100%";
+      this.canvas.style.maxWidth = "none";
       this.canvas.style.maxHeight = "100%";
-      this.canvas.style.margin = "0 auto"; // Center horizontally if smaller than container
+      this.canvas.style.margin = "0";
+      this.canvas.style.display = "block";
+      // Center horizontally if width exceeds container
+      if (scaledWidth > containerWidth) {
+        this.canvas.style.marginLeft = `${(containerWidth - scaledWidth) / 2}px`;
+      }
     } else {
       // On desktop: maintain aspect ratio, fit in container
       const scaleX = containerWidth / CANVAS_WIDTH;

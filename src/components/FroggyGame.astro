@@ -3,6 +3,7 @@
 import StartScreen from "./ui/StartScreen.astro";
 import GameOverScreen from "./ui/GameOverScreen.astro";
 import ScoreDisplay from "./ui/ScoreDisplay.astro";
+import LanguageSelector from "./ui/LanguageSelector.astro";
 import "../styles/game.css";
 ---
 
@@ -11,6 +12,7 @@ import "../styles/game.css";
 
   <!-- UI Overlay -->
   <div class="ui-overlay">
+    <LanguageSelector />
     <StartScreen />
     <ScoreDisplay />
     <GameOverScreen />
@@ -19,6 +21,7 @@ import "../styles/game.css";
 
 <script>
   import { Game } from "../game/core/Game";
+  import { i18n } from "../game/utils/i18n";
 
   let game: Game | null = null;
 
@@ -31,13 +34,105 @@ import "../styles/game.css";
 
       // Set up event handlers
       setupEventHandlers();
+      setupLanguageSelector();
 
       // Initialize game (preloads images)
       game.initialize(() => {
         console.log("Game initialized");
+        updateTranslations(); // Initial translation update
       });
     } catch (error) {
       console.error("Error initializing game:", error);
+    }
+  }
+
+  function setupLanguageSelector() {
+    const languageButton = document.getElementById("language-button");
+    const languageMenu = document.getElementById("language-menu");
+    const currentLanguageFlag = document.getElementById("current-language-flag");
+
+    if (!languageButton || !languageMenu) return;
+
+    // Update flag based on current language
+    const updateFlag = () => {
+      const lang = i18n.getLanguage();
+      const languages = i18n.getAvailableLanguages();
+      const current = languages.find((l) => l.code === lang);
+      if (current && currentLanguageFlag) {
+        currentLanguageFlag.textContent = current.flag;
+      }
+    };
+
+    updateFlag();
+
+    // Toggle menu
+    languageButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isVisible = languageMenu.style.display !== "none";
+      languageMenu.style.display = isVisible ? "none" : "flex";
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        languageMenu &&
+        !languageMenu.contains(e.target as Node) &&
+        !languageButton.contains(e.target as Node)
+      ) {
+        languageMenu.style.display = "none";
+      }
+    });
+
+    // Language option clicks
+    const languageOptions = languageMenu.querySelectorAll(".language-option");
+    languageOptions.forEach((option) => {
+      option.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lang = (option as HTMLElement).dataset.lang as "en" | "es" | "ko";
+        if (lang) {
+          i18n.setLanguage(lang);
+          languageMenu.style.display = "none";
+        }
+      });
+    });
+
+    // Listen for language changes
+    i18n.onLanguageChange(() => {
+      updateTranslations();
+      updateFlag();
+    });
+  }
+
+  function updateTranslations() {
+    // Update start button
+    const startButton = document.getElementById("start-button");
+    if (startButton) {
+      startButton.textContent = i18n.t("start");
+    }
+
+    // Update retry button
+    const retryButton = document.getElementById("retry-button");
+    if (retryButton) {
+      retryButton.textContent = i18n.t("retry");
+    }
+
+    // Update game over screen
+    const gameOverTitle = document.querySelector(".game-over-screen h2");
+    if (gameOverTitle) {
+      gameOverTitle.textContent = i18n.t("gameOver");
+    }
+
+    const finalScoreLabel = document.querySelector(".game-over-screen p");
+    if (finalScoreLabel) {
+      const scoreValue = document.getElementById("final-score")?.textContent || "0";
+      finalScoreLabel.innerHTML = `${i18n.t("finalScore")}: <strong id="final-score">${scoreValue}</strong>`;
+    }
+
+    // Update score display
+    const scoreDisplay = document.getElementById("score-display");
+    if (scoreDisplay) {
+      const scoreValue = document.getElementById("score-value")?.textContent || "0";
+      scoreDisplay.innerHTML = `<span>${i18n.t("score")}: <strong id="score-value">${scoreValue}</strong></span>`;
     }
   }
 
@@ -93,10 +188,10 @@ import "../styles/game.css";
 
     // Score updates
     game.setOnScoreChange((score) => {
-      const scoreEl = document.getElementById("score-value");
-      if (scoreEl) {
-        scoreEl.textContent = score.toString();
-      }
+    const scoreEl = document.getElementById("score-value");
+    if (scoreEl) {
+      scoreEl.textContent = score.toString();
+    }
     });
 
     // Game over handler
